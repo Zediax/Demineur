@@ -3,27 +3,27 @@
 #include <time.h>
 
 void Croissant(int tabC[], int taille_tabC) {
-		int j = 0;
-		std::cout << "Voici le Tableau avant le tri:" << std::endl;
-		for (int x = 0; x < taille_tabC; x++) {
-			std::cout << tabC[x] << " ";
-		}
-		std::cout << "" << std::endl;
-		while (j < taille_tabC) {
-			for (int i = 0; i < tabC[i + 1]; i++) {
-				if (tabC[i + 1] < tabC[i]) {
-					int temp = tabC[i];
-					tabC[i] = tabC[i + 1];
-					tabC[i + 1] = temp;
-				}
+	int j = 0;
+	std::cout << "Voici le Tableau avant le tri:" << std::endl;
+	for (int x = 0; x < taille_tabC; x++) {
+		std::cout << tabC[x] << " ";
+	}
+	std::cout << "" << std::endl;
+	while (j < taille_tabC) {
+		for (int i = 0; i < tabC[i + 1]; i++) {
+			if (tabC[i + 1] < tabC[i]) {
+				int temp = tabC[i];
+				tabC[i] = tabC[i + 1];
+				tabC[i + 1] = temp;
 			}
-			j++;
 		}
-		std::cout << "Voici le tableau C apres le tri: " << std::endl;
-		for (int x = 0; x < taille_tabC; x++) {
-			std::cout << tabC[x] << " ";
-		}
-		std::cout << "" << std::endl;
+		j++;
+	}
+	std::cout << "Voici le tableau C apres le tri: " << std::endl;
+	for (int x = 0; x < taille_tabC; x++) {
+		std::cout << tabC[x] << " ";
+	}
+	std::cout << "" << std::endl;
 }
 void Flip(int tabF[], int tabFT[], int taille_tabF, int taille_tabFT) {
 	std::cout << "Voici le tableau avant le tri:" << std::endl;
@@ -42,6 +42,46 @@ void Flip(int tabF[], int tabFT[], int taille_tabF, int taille_tabFT) {
 	std::cout << "" << std::endl;
 }
 //int Taille(int tabT[5]) {}
+
+void InitGrid(int* Grid, int gridCol, int gridLig) {
+	//index= 0=>n-1 (si 5 lig et 5 col: 4*5+4 = 24 (index 4 lig * 5 colonnes + index 4 col)
+	for (int index = 0; index < gridLig; index++) {
+		for (int index2 = 0; index2 < gridCol; index2++) {
+			int tab_index = index * gridCol + index2;
+			Grid[tab_index] = 0;
+		}
+	}
+}
+void printGrid(int* Grid, int gridCol, int gridLig) {
+	//imprime cellule vivante/morte en fonction de si l'index = 1 (alive) ou 0 (dead)
+	for (int index_x = 0; index_x < gridLig; index_x++) {
+		for (int index_y = 0; index_y < gridCol; index_y++){
+			int index = index_x * gridCol + index_y;
+			if (index == 0) {
+				std::cout << "x";
+			}
+			else {
+				std::cout << "o";
+			}
+		}
+	}
+}
+
+int GetNeighborsStatus (int CellX, int CellY, int* Grid, int gridCol, int gridLig){
+	//initialise un nombre de voisins vivants
+	int nbrAliveNeighbor = 0;
+	//parcour grille 3*3 autour d'index actuel + incremente nbrAliveNeighbor si cellule vivante around
+	for (int neighborX = CellX - 1; neighborX <= CellX + 1; neighborX++) {	
+		for (int neighborY = CellY - 1; neighborY <= CellY + 1; neighborY++) {
+			if (neighborX != CellX && neighborY != CellY) {
+				if (Grid[neighborX*gridCol+neighborY] == 1) {
+					nbrAliveNeighbor++;
+				}
+			}
+		}
+	}
+}
+
 
 
 int main() {
@@ -255,45 +295,28 @@ int main() {
 			//	Taille(tabT, 5);}
 		}
 		else if (choixGame == 5) {
-			int gridCol;
-			int gridLig;
-			int cellCol;
-			int cellLig;
 			std::cout << "Veuillez entrer un nombre de Colonnes: ";
+			int gridCol;
 			std::cin >> gridCol;
+			std::cout << std::endl;
 			std::cout << "Veuillez entrer un nombre de Lignes: ";
+			int gridLig;
 			std::cin >> gridLig;
-			std::cout << "Veuillez selectioner l'emplacement de la cellule" << std::endl;
-			std::cout << "Colonne: ";
-			std::cin >> cellCol;
-			std::cout << "Ligne: ";
-			std::cin >> cellLig;
-			//generation grille avec Cellule établie
-			for (int y = 0; y < gridLig*2-1; y++) {
-				if (y % 2 == 1) {
-					for (int x = 0; x < gridCol; x++) {
-						std::cout << "--- ";
+			std::cout << std::endl;
+			int* Grid = new int[gridCol * gridLig];
+			InitGrid(Grid, gridCol, gridLig);
+			bool SimRun = true;
+			while (SimRun) {
+				int CellX = 0;
+				int CellY = 0;
+				for () {
+					for () {
+						GetNeighbor();
 					}
-					std::cout << std::endl;
-				}
-				else {
-					for (int x = 0;x<=gridCol-1; x++) {
-						if (x == cellCol && y/2 == cellLig) {
-							std::cout << " o ";
-						}
-						else {
-							std::cout << " x ";
-						}
-						if (x < gridCol - 1) {
-							std::cout << "|";
-						}
-					}
-				std::cout << std::endl;
 				}
 			}
-
-			//logique de vie de cellules:
-
+			delete Grid;
+			Grid = nullptr;
 		}
 		else if (choixGame == 6) {
 			return 0;
