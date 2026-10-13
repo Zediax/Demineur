@@ -52,36 +52,46 @@ void InitGrid(int* Grid, int gridCol, int gridLig) {
 		}
 	}
 }
-void printGrid(int* Grid, int gridCol, int gridLig) {
-	//imprime cellule vivante/morte en fonction de si l'index = 1 (alive) ou 0 (dead)
-	for (int index_x = 0; index_x < gridLig; index_x++) {
-		for (int index_y = 0; index_y < gridCol; index_y++){
-			int index = index_x * gridCol + index_y;
-			if (index == 0) {
-				std::cout << "x";
-			}
-			else {
-				std::cout << "o";
-			}
-		}
-	}
-}
-
 int GetNeighborsStatus (int CellX, int CellY, int* Grid, int gridCol, int gridLig){
 	//initialise un nombre de voisins vivants
 	int nbrAliveNeighbor = 0;
 	//parcour grille 3*3 autour d'index actuel + incremente nbrAliveNeighbor si cellule vivante around
 	for (int neighborX = CellX - 1; neighborX <= CellX + 1; neighborX++) {	
 		for (int neighborY = CellY - 1; neighborY <= CellY + 1; neighborY++) {
-			if (neighborX != CellX && neighborY != CellY) {
-				if (Grid[neighborX*gridCol+neighborY] == 1) {
+			if (!(neighborX == CellX && neighborY == CellY) && neighborX >= 0 && neighborY >= 0 && neighborX < gridLig && neighborY < gridCol) {
+				if (Grid[neighborX * gridCol + neighborY] > 0) {
 					nbrAliveNeighbor++;
 				}
 			}
 		}
 	}
+	return nbrAliveNeighbor;
+}
+void printGrid(int* Grid, int gridCol, int gridLig, int ligCell, int colCell) {
+	//imprime cellule vivante/morte en fonction de si l'index = 1 (alive) ou 0 (dead)
+	Grid[ligCell * gridCol + colCell]=1;
+	int neighbors;
+	for (int index_x = 0; index_x < gridLig; index_x++) {
+		for (int index_y = 0; index_y < gridCol; index_y++){
+			if (Grid[index_x * gridCol + index_y] ==1){
+				std::cout << "o";
+			}
+			else {
+				std::cout << "x";
+			}
+			neighbors = GetNeighborsStatus(index_x, index_y, Grid, gridCol, gridLig);
+			if (neighbors < 2 || neighbors > 3){
+				Grid[index_x * gridCol + index_y] = 0;
+			}
+			else {
+				Grid[index_x * gridCol + index_y] = 1;
+			}
+		}
+		std::cout << std::endl;
+	}
 }
 
+//fonction demineur:
 
 
 int main() {
@@ -95,7 +105,8 @@ int main() {
 		std::cout << "3. Jeu de Nim" << std::endl;
 		std::cout << "4. Fonctions" << std::endl;
 		std::cout << "5. Game of Life" << std::endl;
-		std::cout << "6. Quitter" << std::endl;
+		std::cout << "6. Demineur (WIP)" << std::endl;
+		std::cout << "7. Quitter" << std::endl;
 		std::cin >> choixGame;
 		if (choixGame==1){
 			bool calculatrice = true;
@@ -295,6 +306,7 @@ int main() {
 			//	Taille(tabT, 5);}
 		}
 		else if (choixGame == 5) {
+			//taille de la grille
 			std::cout << "Veuillez entrer un nombre de Colonnes: ";
 			int gridCol;
 			std::cin >> gridCol;
@@ -303,22 +315,58 @@ int main() {
 			int gridLig;
 			std::cin >> gridLig;
 			std::cout << std::endl;
+			int choiceCase = 0;
+			//
 			int* Grid = new int[gridCol * gridLig];
 			InitGrid(Grid, gridCol, gridLig);
+			// choix des coordonnées
+			std::cout << "Choisissez une ligne pour la cellule: ";
+			int ligCell;
+			while (choiceCase == 0) {
+				std::cin >> ligCell;
+				if (ligCell < gridLig && ligCell >= 0) {
+					choiceCase=1;
+				}
+				else{
+					std::cout << "Erreur: Valeur Invalide" << std::endl;
+				}
+			}
+			std::cout << std::endl;
+			choiceCase = 0;
+			std::cout << "Choisissez une colonne pour la cellule: ";
+			int colCell;
+			while (choiceCase==0){
+				std::cin >> colCell;
+				if (colCell < gridCol && colCell >= 0) {
+					choiceCase=1;
+				}
+				else{
+					std::cout << "Erreur: Valeur Invalide" << std::endl;
+				}
+				std::cout << std::endl;
+			}
+			//
 			bool SimRun = true;
-			while (SimRun) {
-				int CellX = 0;
-				int CellY = 0;
-				for () {
-					for () {
-						GetNeighbor();
+			int aliveNeighbors = 0;
+			printGrid(Grid, gridCol, gridLig, ligCell, colCell);
+			while (SimRun == true) {
+				for (int lig = 0; lig < gridLig; lig++) {
+					for (int col = 0; col < gridCol; col++) {
+						aliveNeighbors = GetNeighborsStatus(lig, col, Grid, gridCol, gridLig);
+						std::cout << aliveNeighbors;
+						std::cout << std::endl;
 					}
 				}
+				SimRun = !SimRun;
+			std::cout << std::endl;
 			}
 			delete Grid;
 			Grid = nullptr;
 		}
 		else if (choixGame == 6) {
+			return 0;
+		}
+		else if (choixGame == 7) {
 			return 0;
 		}
 	}
