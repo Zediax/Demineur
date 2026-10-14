@@ -390,7 +390,22 @@ int main() {
 			Grid = nullptr;
 		}
 		else if (choixGame == 6) {
-			return 0;
+			std::cout << "Selectionnez la difficulte (1. Facile) (2. Normal) (3. Difficile): ";
+			int choicediff;
+			std::cin >> choicediff;
+			if (choicediff < 1 || choicediff >3) {
+				std::cout << "Erreur, Valeur Invalide.";
+				std::cout << std::endl;
+			}
+			else if (choicediff == 1) {
+				std::cout << "Diff 1";
+			}
+			else if (choicediff == 2){
+				std::cout << "Diff 2";
+			}
+			else if (choicediff == 3) {
+				std::cout << "Diff 3";
+			}
 		}
 		else if (choixGame == 7) {
 			return 0;
