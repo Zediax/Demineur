@@ -67,10 +67,28 @@ int GetNeighborsStatus (int CellX, int CellY, int* Grid, int gridCol, int gridLi
 	}
 	return nbrAliveNeighbor;
 }
-void printGrid(int* Grid, int gridCol, int gridLig, int ligCell, int colCell) {
+
+void displayNeighbors(int* Grid, int gridCol, int gridLig) {
+	int aliveNeighbors = 0;
+	for (int lig = 0; lig < gridLig; lig++) {
+		for (int col = 0; col < gridCol; col++) {
+			aliveNeighbors = GetNeighborsStatus(lig, col, Grid, gridCol, gridLig);
+			std::cout << aliveNeighbors;
+		}
+		std::cout << std::endl;
+	}
+}
+
+void printGrid(int* Grid, int gridCol, int gridLig) {
 	//imprime cellule vivante/morte en fonction de si l'index = 1 (alive) ou 0 (dead)
-	Grid[ligCell * gridCol + colCell]=1;
 	int neighbors;
+	int* neighborhood = new int[gridCol * gridLig];
+	for (int x = 0; x < gridLig; x++) {
+		for (int y = 0; y < gridCol; y++) {
+		neighbors = GetNeighborsStatus(x, y, Grid, gridCol, gridLig);
+		neighborhood[x * gridCol + y] = neighbors;
+		}
+	}
 	for (int index_x = 0; index_x < gridLig; index_x++) {
 		for (int index_y = 0; index_y < gridCol; index_y++){
 			if (Grid[index_x * gridCol + index_y] ==1){
@@ -79,16 +97,17 @@ void printGrid(int* Grid, int gridCol, int gridLig, int ligCell, int colCell) {
 			else {
 				std::cout << "x";
 			}
-			neighbors = GetNeighborsStatus(index_x, index_y, Grid, gridCol, gridLig);
-			if (neighbors < 2 || neighbors > 3){
+			if (neighborhood[index_x * gridCol + index_y] < 2 || neighborhood[index_x * gridCol + index_y] > 3){
 				Grid[index_x * gridCol + index_y] = 0;
 			}
-			else {
+			else if (neighborhood[index_x * gridCol + index_y] == 3){
 				Grid[index_x * gridCol + index_y] = 1;
 			}
 		}
 		std::cout << std::endl;
 	}
+	delete neighborhood;
+	neighborhood = nullptr;
 }
 
 //fonction demineur:
@@ -319,46 +338,53 @@ int main() {
 			//
 			int* Grid = new int[gridCol * gridLig];
 			InitGrid(Grid, gridCol, gridLig);
-			// choix des coordonnées
-			std::cout << "Choisissez une ligne pour la cellule: ";
-			int ligCell;
-			while (choiceCase == 0) {
-				std::cin >> ligCell;
-				if (ligCell < gridLig && ligCell >= 0) {
-					choiceCase=1;
-				}
-				else{
-					std::cout << "Erreur: Valeur Invalide" << std::endl;
-				}
+			//choix nombre cellules vivantes: (max taille tab):
+			std::cout << "Combien de cellules voulez vous: ";
+			int nbrBirth;
+			std::cin >> nbrBirth;
+			while (nbrBirth >= gridCol * gridLig || nbrBirth < 1) {
+				std::cout << "Erreur: Valeur Invalide.";
+				std::cin >> nbrBirth;
 			}
-			std::cout << std::endl;
-			choiceCase = 0;
-			std::cout << "Choisissez une colonne pour la cellule: ";
-			int colCell;
-			while (choiceCase==0){
-				std::cin >> colCell;
-				if (colCell < gridCol && colCell >= 0) {
-					choiceCase=1;
-				}
-				else{
-					std::cout << "Erreur: Valeur Invalide" << std::endl;
-				}
-				std::cout << std::endl;
-			}
-			//
-			bool SimRun = true;
-			int aliveNeighbors = 0;
-			printGrid(Grid, gridCol, gridLig, ligCell, colCell);
-			while (SimRun == true) {
-				for (int lig = 0; lig < gridLig; lig++) {
-					for (int col = 0; col < gridCol; col++) {
-						aliveNeighbors = GetNeighborsStatus(lig, col, Grid, gridCol, gridLig);
-						std::cout << aliveNeighbors;
-						std::cout << std::endl;
+			for (int i =0; i < nbrBirth; i++){
+				// choix des coordonnées
+				std::cout << "Choisissez une ligne pour la cellule: ";
+				int ligCell;
+				while (choiceCase == 0) {
+					std::cin >> ligCell;
+					if (ligCell < gridLig && ligCell >= 0) {
+						choiceCase = 1;
+					}
+					else {
+						std::cout << "Erreur: Valeur Invalide" << std::endl;
 					}
 				}
-				SimRun = !SimRun;
+				std::cout << std::endl;
+				choiceCase = 0;
+				std::cout << "Choisissez une colonne pour la cellule: ";
+				int colCell;
+				while (choiceCase == 0) {
+					std::cin >> colCell;
+					if (colCell < gridCol && colCell >= 0) {
+						choiceCase = 1;
+					}
+					else {
+						std::cout << "Erreur: Valeur Invalide" << std::endl;
+					}
+					std::cout << std::endl;
+				}
+				choiceCase = 0;
+				Grid[ligCell * gridCol + colCell] = 1;
+				//
+			}
 			std::cout << std::endl;
+			std::cout << "Combien de fois voulez-vous que la simulation itere: ";
+			int temps;
+			std::cin >> temps;
+			while (temps > 0) {
+				displayNeighbors(Grid, gridCol, gridLig);
+				printGrid(Grid, gridCol, gridLig);
+				temps--;
 			}
 			delete Grid;
 			Grid = nullptr;
@@ -370,8 +396,5 @@ int main() {
 			return 0;
 		}
 	}
-
-	
-
 	return 0;
 }
