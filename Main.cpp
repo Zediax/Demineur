@@ -398,12 +398,14 @@ int main() {
 				std::cout << std::endl;
 			}
 			else if (choicediff == 1) {
-				std::cout << "Diff 1";
+				//10x10 en facile | bombe = 10 (10%)
 			}
 			else if (choicediff == 2){
+				//15x15 en normal | bombe = 34 (18%)
 				std::cout << "Diff 2";
 			}
 			else if (choicediff == 3) {
+				//20x20 en difficile | bombe = 100 (25%)
 				std::cout << "Diff 3";
 			}
 		}
