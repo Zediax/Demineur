@@ -1,6 +1,7 @@
 #include <iostream>
 #include <random>
 #include <time.h>
+#include <windows.h>
 
 void Croissant(int tabC[], int taille_tabC) {
 	int j = 0;
@@ -41,8 +42,8 @@ void Flip(int tabF[], int tabFT[], int taille_tabF, int taille_tabFT) {
 	}
 	std::cout << "" << std::endl;
 }
-//int Taille(int tabT[5]) {}
 
+//fonction initialisation de grille:
 void InitGrid(int* Grid, int gridCol, int gridLig) {
 	//index= 0=>n-1 (si 5 lig et 5 col: 4*5+4 = 24 (index 4 lig * 5 colonnes + index 4 col)
 	for (int index = 0; index < gridLig; index++) {
@@ -52,6 +53,9 @@ void InitGrid(int* Grid, int gridCol, int gridLig) {
 		}
 	}
 }
+//
+
+//fonctions Game of Life:
 int GetNeighborsStatus (int CellX, int CellY, int* Grid, int gridCol, int gridLig){
 	//initialise un nombre de voisins vivants
 	int nbrAliveNeighbor = 0;
@@ -67,7 +71,6 @@ int GetNeighborsStatus (int CellX, int CellY, int* Grid, int gridCol, int gridLi
 	}
 	return nbrAliveNeighbor;
 }
-
 void displayNeighbors(int* Grid, int gridCol, int gridLig) {
 	int aliveNeighbors = 0;
 	for (int lig = 0; lig < gridLig; lig++) {
@@ -78,7 +81,6 @@ void displayNeighbors(int* Grid, int gridCol, int gridLig) {
 		std::cout << std::endl;
 	}
 }
-
 void printGrid(int* Grid, int gridCol, int gridLig) {
 	//imprime cellule vivante/morte en fonction de si l'index = 1 (alive) ou 0 (dead)
 	int neighbors;
@@ -109,9 +111,7 @@ void printGrid(int* Grid, int gridCol, int gridLig) {
 	delete neighborhood;
 	neighborhood = nullptr;
 }
-
-//fonction demineur:
-
+//
 
 int main() {
 
@@ -390,24 +390,70 @@ int main() {
 			Grid = nullptr;
 		}
 		else if (choixGame == 6) {
+			//selection de la difficulté
 			std::cout << "Selectionnez la difficulte (1. Facile) (2. Normal) (3. Difficile): ";
 			int choicediff;
 			std::cin >> choicediff;
+			int demCol;
+			int demLig;
+			int nbrBombes;
+			int nbrCases;
+			int posX=0;
+			int posY=0;
 			if (choicediff < 1 || choicediff >3) {
 				std::cout << "Erreur, Valeur Invalide.";
 				std::cout << std::endl;
 			}
 			else if (choicediff == 1) {
 				//10x10 en facile | bombe = 10 (10%)
+				demCol = 10;
+				demLig = 10;
+				nbrBombes = 10;
 			}
 			else if (choicediff == 2){
 				//15x15 en normal | bombe = 34 (18%)
-				std::cout << "Diff 2";
+				demCol = 15;
+				demLig = 15;
+				nbrBombes = 34;
 			}
 			else if (choicediff == 3) {
 				//20x20 en difficile | bombe = 100 (25%)
-				std::cout << "Diff 3";
+				demCol = 20;
+				demLig = 20;
+				nbrBombes = 100;
 			}
+			int* DGrid = new int[demCol * demLig];
+			bool demRun = true;
+			while (demRun) {
+
+				bool isBomb;
+				//detection barre espace pour devoiler une case => si vide: rien, si bombe: boom, sinon chiffre (de 1 a 8)
+				SHORT keySpace = GetKeyState(VK_SPACE);
+				SHORT keyLeft = GetKeyState(VK_LEFT);
+				SHORT keyRight = GetKeyState(VK_RIGHT);
+				SHORT keyDown = GetKeyState(VK_DOWN);
+				SHORT keyUp = GetKeyState(VK_UP);
+				if (keySpace & 0x8000) {
+				std::cout << "ca marche" << std::endl;
+				std::srand(time(NULL));
+				for (int a = 0; a < nbrBombes; a++) {
+					int const randoX = rand() % demCol;
+					int const randoY = rand() % demLig;
+					if (DGrid[randoX * demCol + randoY] != 9 && !()){
+						DGrid[randoX * demCol + randoY] = 9;
+					}
+					else {
+						a--;
+					}
+				}
+				demRun = false;
+				}
+			}
+
+			delete DGrid;
+			DGrid = nullptr;
+
+			//
 		}
 		else if (choixGame == 7) {
 			return 0;
