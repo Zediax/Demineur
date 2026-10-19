@@ -1,11 +1,11 @@
 #include <iostream>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 #include <random>
 #include <time.h>
-#include <windows.h>
-#include <chrono>
 
 using namespace std;
-using namespace chrono;
 
 void Croissant(int tabC[], int taille_tabC) {
 	int j = 0;
@@ -47,7 +47,7 @@ void Flip(int tabF[], int tabFT[], int taille_tabF, int taille_tabFT) {
 	cout << "" << endl;
 }
 
-//fonction initialisation de grille:
+//fonctions Game of Life:
 void InitGrid(int* Grid, int gridCol, int gridLig) {
 	//index= 0=>n-1 (si 5 lig et 5 col: 4*5+4 = 24 (index 4 lig * 5 colonnes + index 4 col)
 	for (int index = 0; index < gridLig; index++) {
@@ -57,9 +57,6 @@ void InitGrid(int* Grid, int gridCol, int gridLig) {
 		}
 	}
 }
-//
-
-//fonctions Game of Life:
 int GetNeighborsStatus (int CellX, int CellY, int* Grid, int gridCol, int gridLig){
 	//initialise un nombre de voisins vivants
 	int nbrAliveNeighbor = 0;
@@ -118,13 +115,87 @@ void printGrid(int* Grid, int gridCol, int gridLig) {
 //
 
 //fonctions démineur:
+void InitDGrid(int* Grid, int gridCol, int gridLig) {
+	//index= 0=>n-1 (si 5 lig et 5 col: 4*5+4 = 24 (index 4 lig * 5 colonnes + index 4 col)
+	for (int index = 0; index < gridLig; index++) {
+		for (int index2 = 0; index2 < gridCol; index2++) {
+			cout << "██ ";
+			int tab_index = index * gridCol + index2;
+			random_device rd;
+			mt19937 gen(rd());
+			uniform_int_distribution<int> dist(1, 2);
+			int demrand = dist(gen);
+			Grid[tab_index] = demrand;
+		}
+		cout << endl;
+		cout << endl;
+	}
+}
 bool isKeyPressed(int pressedKey) {
 	SHORT keyPressed = GetKeyState(pressedKey);
 	return (keyPressed & 0x8000) !=0;
 }
+// 💥 <- pour les bombes cliquée
+void printGridDem(int* DGrid, int demCol, int demLig) {
+	for (int demIndX = 0; demIndX < demLig; demIndX++) {
+		for (int demIndY = 0; demIndY < demCol; demIndY++) {
+			int i = DGrid[demIndX * demCol + demIndY];
+			// definition de cellule (chiffre, clear ou unclear)
+			if (DGrid[i] == 0) {
+				//clear cell
+				cout << "██ ";
+			}
+			else if (DGrid[i] == 1) {
+				//unclear cell
+				cout << "__ ";
+			}
+			else if (DGrid[i] == 2) {
+				cout << "💣 ";
+			}
+			else if (DGrid[i] == 3) {
+				cout << " 1 ";
+			}
+			else if (DGrid[i] == 4) {
+				cout << " 2 ";
+			}
+			else if (DGrid[i] == 5) {
+				cout << " 3 ";
+			}
+			else if (DGrid[i] == 6) {
+				cout << " 4 ";
+			}
+			else if (DGrid[i] == 7) {
+				cout << " 5 ";
+			}
+			else if (DGrid[i] == 8) {
+				cout << " 6 ";
+			}
+			else if (DGrid[i] == 9) {
+				cout << " 7 ";
+			}
+			else if (DGrid[i] == 10) {
+				cout << " 8 ";
+			}
+		} 
+		cout << endl;
+		cout << endl;
+	}
+}
+void FloodFill(int cellX, int cellY, int* DGrid, int SizeX, int SizeY) {
+	if (cellX >= 0 && cellX < SizeX && cellY >= 0 && cellY < SizeY) {
+		int Index = cellX * SizeY + cellY;
+		if (DGrid[Index] != 1) {
+			DGrid[Index] = 1;
+			FloodFill(cellX + 1, cellY, DGrid, SizeX, SizeY);
+			FloodFill(cellX + -1, cellY, DGrid, SizeX, SizeY);
+			FloodFill(cellX, cellY + 1, DGrid, SizeX, SizeY);
+			FloodFill(cellX, cellY + -1, DGrid, SizeX, SizeY);
+		}
+	}
+}
 
 int main() {
-
+	SetConsoleOutputCP(65001);
 	bool game=true;
 	while (game == true){
 		int choixGame;
@@ -434,20 +505,56 @@ int main() {
 			}
 			int* DGrid = new int[demCol * demLig];
 			bool demRun = true;
-			const auto delay = milliseconds(300);
-			auto timeLastInput = steady_clock::now() - delay;
+			InitDGrid(DGrid, demCol, demLig);
+			cout << "Coordonnees: " << posX << " - " << posY << endl;
 			while (demRun == true) {
-				bool isBomb;
-				auto now = steady_clock::now();
-				auto time_diff = now - timeLastInput;
 				//detection barre espace pour devoiler une case => si vide: rien, si bombe: boom, sinon chiffre (de 1 a 8)
-				if (isKeyPressed(VK_SPACE) && time_diff >= delay && 0x8000) {
-					cout << "Space Pressed" << endl;
-					//break;$
-					Sleep(500);
+				if (isKeyPressed(VK_SPACE) && 0x8000) {
+					while (isKeyPressed(VK_SPACE) && 0x8000);
+					FloodFill(posX, posY, DGrid, demCol, demLig);
+					printGridDem(DGrid, demCol, demLig);
 				}
-				//break;
-				demRun == !demRun;
+				//detection touches de déplacement:
+				if (isKeyPressed(VK_LEFT) && 0x8000) {
+					while (isKeyPressed(VK_LEFT) && 0x8000);
+					if (posX == 0) {
+						cout << "Impossible d'aller plus loin !" << endl;
+					} 
+					else {
+						posX--;
+						cout << "Coordonnees: " << posX << " - " << posY << endl;
+					}
+				}
+				if (isKeyPressed(VK_RIGHT) && 0x8000) {
+					while (isKeyPressed(VK_RIGHT) && 0x8000);
+					if (posX == demCol-1) {
+						cout << "Impossible d'aller plus loin !" << endl;
+					}
+					else {
+						posX++;
+						cout << "Coordonnees: " << posX << " - " << posY << endl;
+					}
+				}
+				if (isKeyPressed(VK_UP) && 0x8000) {
+					while (isKeyPressed(VK_UP) && 0x8000);
+					if (posY == 0) {
+						cout << "Impossible d'aller plus loin !" << endl;
+					}
+					else {
+						posY--;
+						cout << "Coordonnees: " << posX << " - " << posY << endl;
+					}
+				}
+				if (isKeyPressed(VK_DOWN) && 0x8000) {
+					while (isKeyPressed(VK_DOWN) && 0x8000);
+					if (posY == demLig) {
+						cout << "Impossible d'aller plus loin !" << endl;
+					}
+					else {
+						posY++;
+						cout << "Coordonnees: " << posX << " - " << posY << endl;
+					}
+				}
 			}
 			//
 			cout << endl;
