@@ -3,6 +3,7 @@
 #include <windows.h>
 #endif
 #include <random>
+#include <ctime>
 #include <time.h>
 
 using namespace std;
@@ -112,84 +113,112 @@ void printGrid(int* Grid, int gridCol, int gridLig) {
 	delete neighborhood;
 	neighborhood = nullptr;
 }
-//
 
 //fonctions démineur:
-void InitDGrid(int* Grid, int gridCol, int gridLig) {
-	//index= 0=>n-1 (si 5 lig et 5 col: 4*5+4 = 24 (index 4 lig * 5 colonnes + index 4 col)
-	for (int index = 0; index < gridLig; index++) {
-		for (int index2 = 0; index2 < gridCol; index2++) {
-			cout << "██ ";
-			int tab_index = index * gridCol + index2;
-			random_device rd;
-			mt19937 gen(rd());
-			uniform_int_distribution<int> dist(1, 2);
-			int demrand = dist(gen);
-			Grid[tab_index] = demrand;
+int DemNeighbors(int* DGrid, int demCol, int demLig, int posX, int posY) {
+	int nbrMineNeighbors = 0;
+	for (int nX = posX - 1; nX <= posX + 1; nX++) {
+		for (int nY = posY - 1; nY <= posY + 1; nY++) {
+			if (!(nX == posX && nY == posY) && nX >= 0 && nY >= 0 && nX < demLig && nY < demCol) {
+				if (DGrid[nX * demCol + nY] == 9) {
+					nbrMineNeighbors++;
+				}
+			}
 		}
-		cout << endl;
-		cout << endl;
+	}
+	return nbrMineNeighbors;
+}
+void InitDGrid(int* DGrid, int demCol, int demLig, int nbrBombes) {
+	//index= 0=>n-1 (si 5 lig et 5 col: 4*5+4 = 24 (index 4 lig * 5 colonnes + index 4 col)
+	int bombes = 0;
+	int tab_index;
+	srand(time(NULL));
+	//placement aléatoire des bombes sur la grille:
+	while (nbrBombes != 0) {
+		int rX = rand() % demCol;
+		int rY = rand() % demLig;
+		tab_index = rX * demCol + rY;
+		if (DGrid[tab_index] != 9) {
+			DGrid[tab_index] = 9;
+			nbrBombes--;
+		}
+	}
+	for (int indX = 0; indX < demLig; indX++) {
+		for (int indY = 0; indY < demCol; indY++) {
+			//affichage de la grille completement cachée:
+			cout << "██ ";
+			tab_index = indX * demCol + indY;
+			DGrid[tab_index] = 10 + DemNeighbors(DGrid, demCol, demLig, indX, indY);
+		}
+	cout << endl;
+	cout << endl;
 	}
 }
 bool isKeyPressed(int pressedKey) {
 	SHORT keyPressed = GetKeyState(pressedKey);
 	return (keyPressed & 0x8000) !=0;
 }
-// 💥 <- pour les bombes cliquée
 void printGridDem(int* DGrid, int demCol, int demLig) {
 	for (int demIndX = 0; demIndX < demLig; demIndX++) {
 		for (int demIndY = 0; demIndY < demCol; demIndY++) {
-			int i = DGrid[demIndX * demCol + demIndY];
-			// definition de cellule (chiffre, clear ou unclear)
+			int i = demIndX * demCol + demIndY;
+			DGrid[i] -= 10;
+			// definition de cellule (mine, safe, hidden)
 			if (DGrid[i] == 0) {
-				//clear cell
-				cout << "██ ";
-			}
-			else if (DGrid[i] == 1) {
-				//unclear cell
+				//safe cell
 				cout << "__ ";
 			}
-			else if (DGrid[i] == 2) {
-				cout << "💣 ";
-			}
-			else if (DGrid[i] == 3) {
+			else if (DGrid[i] == 1) {
 				cout << " 1 ";
 			}
-			else if (DGrid[i] == 4) {
+			else if (DGrid[i] == 2) {
 				cout << " 2 ";
 			}
-			else if (DGrid[i] == 5) {
+			else if (DGrid[i] == 3) {
 				cout << " 3 ";
 			}
-			else if (DGrid[i] == 6) {
+			else if (DGrid[i] == 4) {
 				cout << " 4 ";
 			}
-			else if (DGrid[i] == 7) {
+			else if (DGrid[i] == 5) {
 				cout << " 5 ";
 			}
-			else if (DGrid[i] == 8) {
+			else if (DGrid[i] == 6) {
 				cout << " 6 ";
 			}
-			else if (DGrid[i] == 9) {
+			else if (DGrid[i] == 7) {
 				cout << " 7 ";
 			}
-			else if (DGrid[i] == 10) {
+			else if (DGrid[i] == 8) {
 				cout << " 8 ";
+			}
+			else if (DGrid[i] == 9) {
+				//mine cell
+				cout << "💣 ";
+			}
+			else if (DGrid[i] >= 10) {
+				//hidden cell
+				cout << "██ ";
 			}
 		} 
 		cout << endl;
 		cout << endl;
 	}
 }
+// 💥 <- pour les bombes cliquée
 void FloodFill(int cellX, int cellY, int* DGrid, int SizeX, int SizeY) {
 	if (cellX >= 0 && cellX < SizeX && cellY >= 0 && cellY < SizeY) {
 		int Index = cellX * SizeY + cellY;
-		if (DGrid[Index] != 1) {
-			DGrid[Index] = 1;
+		Index -= 10;
+		if (DGrid[Index] == 0) {
 			FloodFill(cellX + 1, cellY, DGrid, SizeX, SizeY);
 			FloodFill(cellX + -1, cellY, DGrid, SizeX, SizeY);
 			FloodFill(cellX, cellY + 1, DGrid, SizeX, SizeY);
 			FloodFill(cellX, cellY + -1, DGrid, SizeX, SizeY);
+			FloodFill(cellX + 1, cellY + 1, DGrid, SizeX, SizeY);
+			FloodFill(cellX + 1, cellY + -1, DGrid, SizeX, SizeY);
+			FloodFill(cellX + -1, cellY + 1, DGrid, SizeX, SizeY);
+			FloodFill(cellX + -1, cellY + -1, DGrid, SizeX, SizeY);
 		}
 	}
 }
@@ -474,7 +503,6 @@ int main() {
 			int demCol;
 			int demLig;
 			int nbrBombes;
-			int nbrCases;
 			int posX=0;
 			int posY=0;
 			int choicediff;
@@ -505,7 +533,7 @@ int main() {
 			}
 			int* DGrid = new int[demCol * demLig];
 			bool demRun = true;
-			InitDGrid(DGrid, demCol, demLig);
+			InitDGrid(DGrid, demCol, demLig, nbrBombes);
 			cout << "Coordonnees: " << posX << " - " << posY << endl;
 			while (demRun == true) {
 				//detection barre espace pour devoiler une case => si vide: rien, si bombe: boom, sinon chiffre (de 1 a 8)
