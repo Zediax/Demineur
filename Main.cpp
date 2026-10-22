@@ -2,6 +2,7 @@
 #ifdef _WIN32
 #include <windows.h>
 #endif
+#include <queue>
 #include <random>
 #include <ctime>
 #include <time.h>
@@ -146,7 +147,12 @@ void InitDGrid(int* DGrid, int demCol, int demLig, int nbrBombes) {
 	for (int indX = 0; indX < demLig; indX++) {
 		for (int indY = 0; indY < demCol; indY++) {
 			//affichage de la grille completement cachée:
-			cout << "██ ";
+			if (indX == 0 && indY == 0) {
+				cout << "[██]";
+			}
+			else {
+				cout << " ██ ";
+			}
 			tab_index = indX * demCol + indY;
 			DGrid[tab_index] = 10 + DemNeighbors(DGrid, demCol, demLig, indX, indY);
 		}
@@ -158,7 +164,7 @@ bool isKeyPressed(int pressedKey) {
 	SHORT keyPressed = GetKeyState(pressedKey);
 	return (keyPressed & 0x8000) !=0;
 }
-void printGridDem(int* DGrid, int demCol, int demLig) {
+void printGridDem(int* DGrid, int demCol, int demLig, int posX, int posY) {
 	for (int demIndX = 0; demIndX < demLig; demIndX++) {
 		for (int demIndY = 0; demIndY < demCol; demIndY++) {
 			int i = demIndX * demCol + demIndY;
@@ -166,39 +172,94 @@ void printGridDem(int* DGrid, int demCol, int demLig) {
 			// definition de cellule (mine, safe, hidden)
 			if (DGrid[i] == 0) {
 				//safe cell
-				cout << "__ ";
+				if (demIndX == posY && demIndY == posX) {
+					cout << "[__]";
+				}
+				else {
+					cout << " __ ";
+				}
 			}
 			else if (DGrid[i] == 1) {
-				cout << " 1 ";
+				if (demIndX == posY && demIndY == posX) {
+					cout << "[ 1]";
+				}
+				else {
+					cout << "  1 ";
+				}
 			}
 			else if (DGrid[i] == 2) {
-				cout << " 2 ";
+				if (demIndX == posY && demIndY == posX) {
+					cout << "[ 2]";
+				}
+				else {
+					cout << "  2 ";
+				}
 			}
 			else if (DGrid[i] == 3) {
-				cout << " 3 ";
+				if (demIndX == posY && demIndY == posX) {
+					cout << "[ 3]";
+				}
+				else {
+					cout << "  3 ";
+				}
 			}
 			else if (DGrid[i] == 4) {
-				cout << " 4 ";
+				if (demIndX == posY && demIndY == posX) {
+					cout << "[ 4]";
+				}
+				else {
+					cout << "  4 ";
+				}
 			}
 			else if (DGrid[i] == 5) {
-				cout << " 5 ";
+				if (demIndX == posY && demIndY == posX) {
+					cout << "[ 5]";
+				}
+				else {
+					cout << "  5 ";
+				}
 			}
 			else if (DGrid[i] == 6) {
-				cout << " 6 ";
+				if (demIndX == posY && demIndY == posX) {
+					cout << "[ 6]";
+				}
+				else {
+					cout << "  6 ";
+				}
 			}
 			else if (DGrid[i] == 7) {
-				cout << " 7 ";
+				if (demIndX == posY && demIndY == posX) {
+					cout << "[ 7]";
+				}
+				else {
+					cout << "  7 ";
+				}
 			}
 			else if (DGrid[i] == 8) {
-				cout << " 8 ";
+				if (demIndX == posY && demIndY == posX) {
+					cout << "[ 8]";
+				}
+				else {
+					cout << "  8 ";
+				}
 			}
 			else if (DGrid[i] == 9) {
 				//mine cell
-				cout << "💣 ";
+				if (demIndX == posY && demIndY == posX) {
+					cout << "[💣]";
+				}
+				else {
+					cout << " 💣 ";
+				}
 			}
 			else if (DGrid[i] >= 10) {
 				//hidden cell
-				cout << "██ ";
+				if (demIndX == posY && demIndY == posX) {
+					cout << "[██]";
+				}
+				else {
+					cout << " ██ ";
+				}
 			}
 		} 
 		cout << endl;
@@ -206,19 +267,36 @@ void printGridDem(int* DGrid, int demCol, int demLig) {
 	}
 }
 // 💥 <- pour les bombes cliquée
-void FloodFill(int cellX, int cellY, int* DGrid, int SizeX, int SizeY) {
-	if (cellX >= 0 && cellX < SizeX && cellY >= 0 && cellY < SizeY) {
-		int Index = cellX * SizeY + cellY;
+
+void FloodFill(int posX, int posY, int* DGrid, int gridCol, int gridLig) {
+	queue<pair<int, int>> q;
+	int qx[8] = { 0,0,1,-1,1,1,-1,-1 };
+	int qy[8] = { 1,-1,0,0,1,-1,1,-1 };
+
+	while (!q.empty()) {
+		pair<int, int> current = q.front();
+		int cx = current.first;
+		int cy = current.second;
+		q.pop();
+
+		if (cx >= 0 && cx < gridCol && cy >= 0 && cy < gridLig) {
+			int i = cx * gridCol + cy;
+			if (DGrid[i] - 10 == 0) {
+				DGrid[i] = 0;
+			}
+		}
+	}
+
+	if (posX >= 0 && posX < gridCol && posY >= 0 && posY < gridLig) {
+		int Index = posX * gridLig + posY;
 		Index -= 10;
 		if (DGrid[Index] == 0) {
-			FloodFill(cellX + 1, cellY, DGrid, SizeX, SizeY);
-			FloodFill(cellX + -1, cellY, DGrid, SizeX, SizeY);
-			FloodFill(cellX, cellY + 1, DGrid, SizeX, SizeY);
-			FloodFill(cellX, cellY + -1, DGrid, SizeX, SizeY);
-			FloodFill(cellX + 1, cellY + 1, DGrid, SizeX, SizeY);
-			FloodFill(cellX + 1, cellY + -1, DGrid, SizeX, SizeY);
-			FloodFill(cellX + -1, cellY + 1, DGrid, SizeX, SizeY);
-			FloodFill(cellX + -1, cellY + -1, DGrid, SizeX, SizeY);
+			for (int x = posX - 1; x <= posX + 1; x++) {
+				for (int y = posY - 1; y <= posY + 1; y++) {
+					int tab = x * gridCol + y;
+					DGrid[tab] = 0;
+				}
+			}
 		}
 	}
 }
@@ -540,7 +618,7 @@ int main() {
 				if (isKeyPressed(VK_SPACE) && 0x8000) {
 					while (isKeyPressed(VK_SPACE) && 0x8000);
 					FloodFill(posX, posY, DGrid, demCol, demLig);
-					printGridDem(DGrid, demCol, demLig);
+					printGridDem(DGrid, demCol, demLig, posX, posY);
 				}
 				//detection touches de déplacement:
 				if (isKeyPressed(VK_LEFT) && 0x8000) {
