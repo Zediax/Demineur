@@ -139,8 +139,8 @@ void InitDGrid(int* DGrid, int demCol, int demLig, int nbrBombes) {
 		int rX = rand() % demCol;
 		int rY = rand() % demLig;
 		tab_index = rX * demCol + rY;
-		if (DGrid[tab_index] != 9) {
-			DGrid[tab_index] = 9;
+		if (DGrid[tab_index] != 19) {
+			DGrid[tab_index] = 19;
 			nbrBombes--;
 		}
 	}
@@ -165,10 +165,10 @@ bool isKeyPressed(int pressedKey) {
 	return (keyPressed & 0x8000) !=0;
 }
 void printGridDem(int* DGrid, int demCol, int demLig, int posX, int posY) {
+	system("cls");
 	for (int demIndX = 0; demIndX < demLig; demIndX++) {
 		for (int demIndY = 0; demIndY < demCol; demIndY++) {
 			int i = demIndX * demCol + demIndY;
-			DGrid[i] -= 10;
 			// definition de cellule (mine, safe, hidden)
 			if (DGrid[i] == 0) {
 				//safe cell
@@ -282,19 +282,10 @@ void FloodFill(int posX, int posY, int* DGrid, int gridCol, int gridLig) {
 		if (cx >= 0 && cx < gridCol && cy >= 0 && cy < gridLig) {
 			int i = cx * gridCol + cy;
 			if (DGrid[i] - 10 == 0) {
-				DGrid[i] = 0;
-			}
-		}
-	}
+				DGrid[i] -= 10;
 
-	if (posX >= 0 && posX < gridCol && posY >= 0 && posY < gridLig) {
-		int Index = posX * gridLig + posY;
-		Index -= 10;
-		if (DGrid[Index] == 0) {
-			for (int x = posX - 1; x <= posX + 1; x++) {
-				for (int y = posY - 1; y <= posY + 1; y++) {
-					int tab = x * gridCol + y;
-					DGrid[tab] = 0;
+				for (int j = 0; j < 8; j++) {
+					q.push({ cx + qx[j], cy + qy[j] });
 				}
 			}
 		}
@@ -612,53 +603,62 @@ int main() {
 			int* DGrid = new int[demCol * demLig];
 			bool demRun = true;
 			InitDGrid(DGrid, demCol, demLig, nbrBombes);
-			cout << "Coordonnees: " << posX << " - " << posY << endl;
+			cout << "Coordonnees: " << posX << " - " << posY << " | Bombes Restantes: " << nbrBombes << endl;
 			while (demRun == true) {
 				//detection barre espace pour devoiler une case => si vide: rien, si bombe: boom, sinon chiffre (de 1 a 8)
 				if (isKeyPressed(VK_SPACE) && 0x8000) {
 					while (isKeyPressed(VK_SPACE) && 0x8000);
 					FloodFill(posX, posY, DGrid, demCol, demLig);
 					printGridDem(DGrid, demCol, demLig, posX, posY);
+					cout << "Coordonnees: " << posX << " - " << posY << " | Bombes Restantes: " << nbrBombes << endl;
 				}
 				//detection touches de déplacement:
 				if (isKeyPressed(VK_LEFT) && 0x8000) {
 					while (isKeyPressed(VK_LEFT) && 0x8000);
 					if (posX == 0) {
+						printGridDem(DGrid, demCol, demLig, posX, posY);
 						cout << "Impossible d'aller plus loin !" << endl;
 					} 
 					else {
 						posX--;
-						cout << "Coordonnees: " << posX << " - " << posY << endl;
+						printGridDem(DGrid, demCol, demLig, posX, posY);
+						cout << "Coordonnees: " << posX << " - " << posY << "Bombes Restantes: " << nbrBombes << endl;
 					}
 				}
 				if (isKeyPressed(VK_RIGHT) && 0x8000) {
 					while (isKeyPressed(VK_RIGHT) && 0x8000);
 					if (posX == demCol-1) {
+						printGridDem(DGrid, demCol, demLig, posX, posY);
 						cout << "Impossible d'aller plus loin !" << endl;
 					}
 					else {
 						posX++;
-						cout << "Coordonnees: " << posX << " - " << posY << endl;
+						printGridDem(DGrid, demCol, demLig, posX, posY);
+						cout << "Coordonnees: " << posX << " - " << posY << "Bombes Restantes: " << nbrBombes << endl;
 					}
 				}
 				if (isKeyPressed(VK_UP) && 0x8000) {
 					while (isKeyPressed(VK_UP) && 0x8000);
 					if (posY == 0) {
+						printGridDem(DGrid, demCol, demLig, posX, posY);
 						cout << "Impossible d'aller plus loin !" << endl;
 					}
 					else {
 						posY--;
-						cout << "Coordonnees: " << posX << " - " << posY << endl;
+						printGridDem(DGrid, demCol, demLig, posX, posY);
+						cout << "Coordonnees: " << posX << " - " << posY << "Bombes Restantes: " << nbrBombes << endl;
 					}
 				}
 				if (isKeyPressed(VK_DOWN) && 0x8000) {
 					while (isKeyPressed(VK_DOWN) && 0x8000);
-					if (posY == demLig) {
+					if (posY == demLig-1) {
+						printGridDem(DGrid, demCol, demLig, posX, posY);
 						cout << "Impossible d'aller plus loin !" << endl;
 					}
 					else {
 						posY++;
-						cout << "Coordonnees: " << posX << " - " << posY << endl;
+						printGridDem(DGrid, demCol, demLig, posX, posY);
+						cout << "Coordonnees: " << posX << " - " << posY << "Bombes Restantes: " << nbrBombes << endl;
 					}
 				}
 			}
