@@ -4,124 +4,18 @@
 #endif
 #include <queue>
 #include <random>
-#include <ctime>
 #include <time.h>
 
 using namespace std;
 
-void Croissant(int tabC[], int taille_tabC) {
-	int j = 0;
-	cout << "Voici le Tableau avant le tri:" << endl;
-	for (int x = 0; x < taille_tabC; x++) {
-		cout << tabC[x] << " ";
-	}
-	cout << "" << endl;
-	while (j < taille_tabC) {
-		for (int i = 0; i < tabC[i + 1]; i++) {
-			if (tabC[i + 1] < tabC[i]) {
-				int temp = tabC[i];
-				tabC[i] = tabC[i + 1];
-				tabC[i + 1] = temp;
-			}
-		}
-		j++;
-	}
-	cout << "Voici le tableau C apres le tri: " << endl;
-	for (int x = 0; x < taille_tabC; x++) {
-		cout << tabC[x] << " ";
-	}
-	cout << "" << endl;
-}
-void Flip(int tabF[], int tabFT[], int taille_tabF, int taille_tabFT) {
-	cout << "Voici le tableau avant le tri:" << endl;
-	for (int x = 0; x < taille_tabF; x++) {
-		cout << tabF[x] << " ";
-	}
-	for (int z = 0; z < taille_tabF; z++) {
-		for (int y = taille_tabFT; y >= 0; y--) {
-			tabFT[y] = tabF[z];
-		}
-	}
-	cout << "Voici le tableau apres le tri:" << endl;
-	for (int x = 0; x < taille_tabFT; x++) {
-		cout << tabFT[x] << " ";
-	}
-	cout << "" << endl;
-}
-
-//fonctions Game of Life:
-void InitGrid(int* Grid, int gridCol, int gridLig) {
-	//index= 0=>n-1 (si 5 lig et 5 col: 4*5+4 = 24 (index 4 lig * 5 colonnes + index 4 col)
-	for (int index = 0; index < gridLig; index++) {
-		for (int index2 = 0; index2 < gridCol; index2++) {
-			int tab_index = index * gridCol + index2;
-			Grid[tab_index] = 0;
-		}
-	}
-}
-int GetNeighborsStatus (int CellX, int CellY, int* Grid, int gridCol, int gridLig){
-	//initialise un nombre de voisins vivants
-	int nbrAliveNeighbor = 0;
-	//parcour grille 3*3 autour d'index actuel + incremente nbrAliveNeighbor si cellule vivante around
-	for (int neighborX = CellX - 1; neighborX <= CellX + 1; neighborX++) {	
-		for (int neighborY = CellY - 1; neighborY <= CellY + 1; neighborY++) {
-			if (!(neighborX == CellX && neighborY == CellY) && neighborX >= 0 && neighborY >= 0 && neighborX < gridLig && neighborY < gridCol) {
-				if (Grid[neighborX * gridCol + neighborY] > 0) {
-					nbrAliveNeighbor++;
-				}
-			}
-		}
-	}
-	return nbrAliveNeighbor;
-}
-void displayNeighbors(int* Grid, int gridCol, int gridLig) {
-	int aliveNeighbors = 0;
-	for (int lig = 0; lig < gridLig; lig++) {
-		for (int col = 0; col < gridCol; col++) {
-			aliveNeighbors = GetNeighborsStatus(lig, col, Grid, gridCol, gridLig);
-			cout << aliveNeighbors;
-		}
-		cout << endl;
-	}
-}
-void printGrid(int* Grid, int gridCol, int gridLig) {
-	//imprime cellule vivante/morte en fonction de si l'index = 1 (alive) ou 0 (dead)
-	int neighbors;
-	int* neighborhood = new int[gridCol * gridLig];
-	for (int x = 0; x < gridLig; x++) {
-		for (int y = 0; y < gridCol; y++) {
-		neighbors = GetNeighborsStatus(x, y, Grid, gridCol, gridLig);
-		neighborhood[x * gridCol + y] = neighbors;
-		}
-	}
-	for (int index_x = 0; index_x < gridLig; index_x++) {
-		for (int index_y = 0; index_y < gridCol; index_y++){
-			if (Grid[index_x * gridCol + index_y] ==1){
-				cout << "o";
-			}
-			else {
-				cout << "x";
-			}
-			if (neighborhood[index_x * gridCol + index_y] < 2 || neighborhood[index_x * gridCol + index_y] > 3){
-				Grid[index_x * gridCol + index_y] = 0;
-			}
-			else if (neighborhood[index_x * gridCol + index_y] == 3){
-				Grid[index_x * gridCol + index_y] = 1;
-			}
-		}
-		cout << endl;
-	}
-	delete neighborhood;
-	neighborhood = nullptr;
-}
-
 //fonctions démineur:
 int DemNeighbors(int* DGrid, int demCol, int demLig, int posX, int posY) {
+	//compte le nombre de bombes autour d'une case donnée
 	int nbrMineNeighbors = 0;
 	for (int nX = posX - 1; nX <= posX + 1; nX++) {
 		for (int nY = posY - 1; nY <= posY + 1; nY++) {
 			if (!(nX == posX && nY == posY) && nX >= 0 && nY >= 0 && nX < demLig && nY < demCol) {
-				if (DGrid[nX * demCol + nY] == 9) {
+				if (DGrid[nX * demCol + nY] == 19) {
 					nbrMineNeighbors++;
 				}
 			}
@@ -130,14 +24,12 @@ int DemNeighbors(int* DGrid, int demCol, int demLig, int posX, int posY) {
 	return nbrMineNeighbors;
 }
 void InitDGrid(int* DGrid, int demCol, int demLig, int nbrBombes) {
-	//index= 0=>n-1 (si 5 lig et 5 col: 4*5+4 = 24 (index 4 lig * 5 colonnes + index 4 col)
-	int bombes = 0;
-	int tab_index;
 	srand(time(NULL));
+	int tab_index;
 	//placement aléatoire des bombes sur la grille:
 	while (nbrBombes != 0) {
-		int rX = rand() % demCol;
-		int rY = rand() % demLig;
+		int rX = rand() % demLig;
+		int rY = rand() % demCol;
 		tab_index = rX * demCol + rY;
 		if (DGrid[tab_index] != 19) {
 			DGrid[tab_index] = 19;
@@ -147,20 +39,17 @@ void InitDGrid(int* DGrid, int demCol, int demLig, int nbrBombes) {
 	for (int indX = 0; indX < demLig; indX++) {
 		for (int indY = 0; indY < demCol; indY++) {
 			//affichage de la grille completement cachée:
-			if (indX == 0 && indY == 0) {
-				cout << "[██]";
-			}
-			else {
-				cout << " ██ ";
-			}
 			tab_index = indX * demCol + indY;
-			DGrid[tab_index] = 10 + DemNeighbors(DGrid, demCol, demLig, indX, indY);
+			if (DGrid[tab_index] != 19) {
+				DGrid[tab_index] = 10 + DemNeighbors(DGrid, demCol, demLig, indX, indY);
+			}
 		}
 	cout << endl;
 	cout << endl;
 	}
 }
 bool isKeyPressed(int pressedKey) {
+	// vérifie si une touche est actuellement enfoncée
 	SHORT keyPressed = GetKeyState(pressedKey);
 	return (keyPressed & 0x8000) !=0;
 }
@@ -169,7 +58,7 @@ void printGridDem(int* DGrid, int demCol, int demLig, int posX, int posY) {
 	for (int demIndX = 0; demIndX < demLig; demIndX++) {
 		for (int demIndY = 0; demIndY < demCol; demIndY++) {
 			int i = demIndX * demCol + demIndY;
-			// definition de cellule (mine, safe, hidden)
+			// définition des cellules en fonction de leur état
 			if (DGrid[i] == 0) {
 				//safe cell
 				if (demIndX == posY && demIndY == posX) {
@@ -244,16 +133,25 @@ void printGridDem(int* DGrid, int demCol, int demLig, int posX, int posY) {
 				}
 			}
 			else if (DGrid[i] == 9) {
-				//mine cell
+				//case bombe, si cliquée, on affiche une explosion, sinon on affiche la bombe
 				if (demIndX == posY && demIndY == posX) {
-					cout << "[💣]";
+					cout << "[💥]";
 				}
 				else {
 					cout << " 💣 ";
 				}
 			}
+			else if (DGrid[i] >= 30) {
+				//case flag
+				if (demIndX == posY && demIndY == posX) {
+					cout << "[🚩]";
+				}
+				else {
+					cout << " 🚩 ";
+				}
+			}
 			else if (DGrid[i] >= 10) {
-				//hidden cell
+				//case non dévoilée
 				if (demIndX == posY && demIndY == posX) {
 					cout << "[██]";
 				}
@@ -266,410 +164,206 @@ void printGridDem(int* DGrid, int demCol, int demLig, int posX, int posY) {
 		cout << endl;
 	}
 }
-// 💥 <- pour les bombes cliquée
-
 void FloodFill(int posX, int posY, int* DGrid, int gridCol, int gridLig) {
 	queue<pair<int, int>> q;
+	// directions pour les 8 cellules voisines (N, S, E, W, NE, SE, NW, SW)
 	int qx[8] = { 0,0,1,-1,1,1,-1,-1 };
 	int qy[8] = { 1,-1,0,0,1,-1,1,-1 };
-
-	while (!q.empty()) {
-		pair<int, int> current = q.front();
-		int cx = current.first;
-		int cy = current.second;
-		q.pop();
-
-		if (cx >= 0 && cx < gridCol && cy >= 0 && cy < gridLig) {
-			int i = cx * gridCol + cy;
-			if (DGrid[i] - 10 == 0) {
-				DGrid[i] -= 10;
-
-				for (int j = 0; j < 8; j++) {
-					q.push({ cx + qx[j], cy + qy[j] });
+	int start = posY * gridCol + posX;
+	// si la cellule actuelle est vide, on la dévoile et on entame le floodfill
+	if (DGrid[start] >= 10 && DGrid[start] <= 19) {
+		DGrid[start] -= 10;
+		if (DGrid[start] == 0) {
+			q.push({ posX,posY });
+		}
+		while (!q.empty()) {
+			pair<int, int> current = q.front();
+			int cx = current.first;
+			int cy = current.second;
+			q.pop();
+			for (int j = 0; j < 8; j++) {
+				int nx = cx + qx[j];
+				int ny = cy + qy[j];
+				if (nx < 0 || nx >= gridCol || ny < 0 || ny >= gridLig) continue;
+				int i = ny * gridCol + nx;
+				if (DGrid[i] >= 10 && DGrid[i] <= 18) {
+					DGrid[i] -= 10;
+					if (DGrid[i] == 0) {
+						q.push({ nx, ny });
+					}
 				}
 			}
 		}
 	}
 }
+bool victoire(int* DGrid, int demCol, int demLig, int totalMines) {
+	int mineFlag = 0;
+	//compte le nombre de bombes correctement flaggées et vérifie si toutes les cases sont dévoilées 
+	//attention, les cases flag même de façon incorrecte font déscendre le compteur de bombes !
+	for (int i = 0; i < demLig * demCol; i++) {
+		int v = DGrid[i];
+		if (v == 39) {
+			mineFlag++;
+		}
+		else if (v > 8) {
+			return false;
+		}
+	}
+	return mineFlag == totalMines;
+}
 
 int main() {
 	SetConsoleOutputCP(65001);
-	bool game=true;
-	while (game == true){
-		int choixGame;
-		cout << "Que voulez-vous faire ?" << endl;
-		cout << "1. Calculatrice" << endl;
-		cout << "2. Plus ou Moins" << endl;
-		cout << "3. Jeu de Nim" << endl;
-		cout << "4. Fonctions" << endl;
-		cout << "5. Game of Life" << endl;
-		cout << "6. Demineur (WIP)" << endl;
-		cout << "7. Quitter" << endl;
-		cin >> choixGame;
-		if (choixGame==1){
-			bool calculatrice = true;
-			while (calculatrice == true){
-				int choixOP;
-				cout << "Quel type d'operation voulez vous faire ?" << endl;
-				cout << "1. Addition" << endl;
-				cout << "2. Soustraction" << endl;
-				cout << "3. Multiplication" << endl;
-				cout << "4. Division" << endl;
-				cout << "5. Modulo" << endl;
-				cin >> choixOP;
-				if (choixOP == 1){
-					int addnmb1;
-					int addnmb2;
-					cout << "Inserez un premier nombre" << endl;
-					cin >> addnmb1;
-					bool isGood = addnmb1 / 1;
-					if (!isGood){
-						cout << "Erreur: Nombre Invalid";
-						return 0;
-					}
-					cout << "Inserez un deuxieme nombre" << endl;
-					cin >> addnmb2;
-					cout << "Voici le resultat de votre addition" << endl;
-					cout << addnmb1 + addnmb2 << endl;
-				}
-				else if (choixOP == 2){
-					int remnmb1;
-					int remnmb2;
-					cout << "Inserez un premier nombre" << endl;
-					cin >> remnmb1;
-					bool isGood = remnmb1 / 1;
-					if (!isGood){
-						cout << "Erreur: Nombre Invalid";
-						return 0;
-					}
-					cout << "Inserez un deuxieme nombre" << endl;
-					cin >> remnmb2;
-					cout << "Voici le resultat de votre soustraction" << endl;
-					cout << remnmb1 - remnmb2 << endl;
-				}
-				else if (choixOP == 3){
-					int multnmb1;
-					int multnmb2;
-					cout << "Inserez un premier nombre" << endl;
-					cin >> multnmb1;
-					bool isGood = multnmb1 / 1;
-					if (!isGood){
-						cout << "Erreur: Nombre Invalid";
-						return 0;
-					}
-					cout << "Inserez un deuxieme nombre" << endl;
-					cin >> multnmb2;
-					cout << "Voici le resultat de votre multiplication" << endl;
-					cout << multnmb1 * multnmb2 << endl;
-				}
-				else if (choixOP == 4){
-					int divnmb1;
-					int divnmb2;
-					cout << "Inserez un premier nombre" << endl;
-					cin >> divnmb1;
-					bool isGood = divnmb1 / 1;
-					if (!isGood){
-						cout << "Erreur: Nombre Invalid";
-						return 0;
-					}
-					cout << "Inserez un deuxieme nombre" << endl;
-					cin >> divnmb2;
-					cout << "Voici le resultat de votre division" << endl;
-					cout << divnmb1 / divnmb2 << endl;
-				}
-				else if (choixOP == 5){
-					int modnmb1;
-					int modnmb2;
-					cout << "Inserez un premier nombre" << endl;
-					cin >> modnmb1;
-					bool isGood = modnmb1 / 1;
-					if (!isGood){
-						cout << "Erreur: Nombre Invalid";
-						return 0;
-					}
-					cout << "Inserez un deuxieme nombre" << endl;
-					cin >> modnmb2;
-					cout << "Voici le resultat de votre modulo" << endl;
-					cout << modnmb1 % modnmb2 << endl;
-				}
-				else{
-					return 0;
-				}
-				cout << "Voulez-vous continuer a utiliser la calculatrice ?" << endl;
-				cout << "0. Non" << endl;
-				cout << "1. Oui" << endl;
-				cin >> calculatrice;
-			}
-		}
-		else if (choixGame == 2){
-			srand(time(NULL));
-			int const rando = rand()%100;
-			int guess = rando+1;
-			cout << "Un nombre a ete choisi." << endl;
-			cout << "Veuillez inserez un nombre pour deviner:" << endl;
-			while (guess != rando){
-				cin >> guess;
-				if (guess < rando){
-					cout << "Le nombre recherche est plus grand !" << endl;
-				}
-				else{
-					cout << "Le nombre recherche est plus petit !" << endl;
-				}
-			}
-			cout << "Bravo, vous avez trouver !";
-		}
-		else if (choixGame == 3){
-			int batons = 20;
-			int tour;
-			int pick = 0;
-			cout << "Choisissez qui commence (0. Vous) (1. ORDI):";
-			cin >> tour;
-			if (tour == 0 || tour == 1){
-				while (batons != 1){
-					if (tour == 0 && batons != 1) {
-						cout << "Veuillez choisir un nombre de baton a retirer entre 1 et 3:" << endl;
-						cout << "Batons Restants: " << batons << endl;
-						cin >> pick;
-						if (pick > 3 || pick < 1 || pick > batons - 1) {
-							cout << "Impossible de prendre autant de batons !" << endl;
-							tour = 0;
-						}
-						else if (pick == 1) {
-							batons = batons - pick;
-							tour = 1;
-						}
-						else if (pick == 2) {
-							batons = batons - pick;
-							tour = 1;
-						}
-						else if (pick == 3) {
-							batons = batons - pick;
-							tour = 1;
-						}
-					}
-					else if (tour == 1 && batons != 1) {
-						random_device rd;
-						mt19937 gen(rd());
-						uniform_int_distribution<int> dist(1, 3);
-						int iapick = dist(gen);
-						cout << "L'IA a choisis de retirer " << iapick << " batons" << endl;
-						if (iapick > 3 || iapick < 1 || iapick > batons - 1) {
-							cout << "Impossible de prendre autant de batons !" << endl;
-							tour = 1;
-						}
-						else if (iapick == 1) {
-							batons = batons - iapick;
-							tour = 0;
-						}
-						else if (iapick == 2) {
-							batons = batons - iapick;
-							tour = 0;
-						}
-						else if (iapick == 3) {
-							batons = batons - iapick;
-							tour = 0;
-						}
-					}
-				}
-				if (tour == 0) {
-					cout << "Vous avez perdu !" << endl;
-				}
-				else if (tour == 1) {
-					cout << "Vous avez gagner !" << endl;
-				}
-			}
-			else{
-				return 0;
-			}
-		}
-		else if (choixGame == 4){
-			int choixFonc;
-			cout << "Que voulez vous faire ?" << endl;
-			cout << "1. Ordre Croissant" << endl;
-			cout << "2. Flip Tableau" << endl;
-			cout << "3. Taille Tableau" << endl;
-			cout << "4. Quitter" << endl;
-			cin >> choixFonc;
-			if (choixFonc==1){
-				int tabC[5] = { 9, 50 ,87, 45, 63 };
-				Croissant(tabC, 5);
-			}
-			else if (choixFonc == 2) {
-				int tabF[5] = {9, 50 ,87, 45, 63};
-				int tabFT[5] = {};
-				Flip(tabF,tabFT, 5, 5);
-			}
-			//else if (choixFonc == 3) {
-			//	int tabT[5] = {9, 50 ,87, 45, 63};
-			//	Taille(tabT, 5);}
-		}
-		else if (choixGame == 5) {
-			//taille de la grille
-			cout << "Veuillez entrer un nombre de Colonnes: ";
-			int gridCol;
-			cin >> gridCol;
-			cout << endl;
-			cout << "Veuillez entrer un nombre de Lignes: ";
-			int gridLig;
-			cin >> gridLig;
-			cout << endl;
-			int choiceCase = 0;
-			//
-			int* Grid = new int[gridCol * gridLig];
-			InitGrid(Grid, gridCol, gridLig);
-			//choix nombre cellules vivantes: (max taille tab):
-			cout << "Combien de cellules voulez vous: ";
-			int nbrBirth;
-			cin >> nbrBirth;
-			while (nbrBirth >= gridCol * gridLig || nbrBirth < 1) {
-				cout << "Erreur: Valeur Invalide.";
-				cin >> nbrBirth;
-			}
-			for (int i =0; i < nbrBirth; i++){
-				// choix des coordonnées
-				cout << "Choisissez une ligne pour la cellule: ";
-				int ligCell;
-				while (choiceCase == 0) {
-					cin >> ligCell;
-					if (ligCell < gridLig && ligCell >= 0) {
-						choiceCase = 1;
-					}
-					else {
-						cout << "Erreur: Valeur Invalide" << endl;
-					}
-				}
-				cout << endl;
-				choiceCase = 0;
-				cout << "Choisissez une colonne pour la cellule: ";
-				int colCell;
-				while (choiceCase == 0) {
-					cin >> colCell;
-					if (colCell < gridCol && colCell >= 0) {
-						choiceCase = 1;
-					}
-					else {
-						cout << "Erreur: Valeur Invalide" << endl;
-					}
-					cout << endl;
-				}
-				choiceCase = 0;
-				Grid[ligCell * gridCol + colCell] = 1;
-				//
-			}
-			cout << endl;
-			cout << "Combien de fois voulez-vous que la simulation itere: ";
-			int temps;
-			cin >> temps;
-			while (temps > 0) {
-				displayNeighbors(Grid, gridCol, gridLig);
-				printGrid(Grid, gridCol, gridLig);
-				temps--;
-			}
-			delete Grid;
-			Grid = nullptr;
-		}
-		else if (choixGame == 6) {
-			int demCol;
-			int demLig;
-			int nbrBombes;
-			int posX=0;
-			int posY=0;
-			int choicediff;
-			//selection de la difficulté
-			cout << "Selectionnez la difficulte (1. Facile) (2. Normal) (3. Difficile): ";
+	int choixGame;
+	cout << "Que voulez-vous faire ?" << endl;
+	cout << "1. Jouer" << endl;
+	cout << "2. Quitter" << endl;
+	cin >> choixGame;
+	if (choixGame == 1) {
+		int demCol;
+		int demLig;
+		int nbrBombes;
+		int posX = 0;
+		int posY = 0;
+		int choicediff;
+		//selection de la difficulté
+		cout << "Selectionnez la difficulte (1. Facile) (2. Normal) (3. Difficile): ";
+		cin >> choicediff;
+		while (choicediff < 1 || choicediff > 3) {
+			cout << "Erreur, Valeur Invalide. Veuillez reessayer: ";
 			cin >> choicediff;
-			if (choicediff < 1 || choicediff >3) {
-				cout << "Erreur, Valeur Invalide.";
-				cout << endl;
+		}
+		if (choicediff < 1 || choicediff >3) {
+			cout << "Erreur, Valeur Invalide.";
+			cout << endl;
+		}
+		else if (choicediff == 1) {
+			//10x10 en facile | bombe = 10 (10%)
+			demCol = 10;
+			demLig = 10;
+			nbrBombes = 10;
+		}
+		else if (choicediff == 2) {
+			//15x15 en normal | bombe = 34 (18%)
+			demCol = 15;
+			demLig = 15;
+			nbrBombes = 34;
+		}
+		else if (choicediff == 3) {
+			//20x20 en difficile | bombe = 100 (25%)
+			demCol = 20;
+			demLig = 20;
+			nbrBombes = 100;
+		}
+		int* DGrid = new int[demCol * demLig];
+		bool demRun = true;
+		int totalMines = nbrBombes;
+		InitDGrid(DGrid, demCol, demLig, nbrBombes);
+		printGridDem(DGrid, demCol, demLig, posX, posY);
+		cout << "Appuyez sur ESPACE pour devoiler une case, F pour placer un drapeau, et les fleches directionnelles pour vous deplacer." << endl;
+		cout << endl;
+		cout << "Coordonnees: " << posX << " - " << posY << " | Bombes Restantes: " << nbrBombes << endl;
+		while (demRun == true) {
+			//detection barre espace pour devoiler une case => si vide: rien, si bombe: boom, sinon chiffre (de 1 a 8)
+			if (isKeyPressed(VK_SPACE) && 0x8000) {
+				while (isKeyPressed(VK_SPACE) && 0x8000);
+				FloodFill(posX, posY, DGrid, demCol, demLig);
+				printGridDem(DGrid, demCol, demLig, posX, posY);
+				//si toutes les cases sont dévoilées et que toutes les bombes sont flag, on gagne
+				if (victoire(DGrid, demCol, demLig, totalMines) == true) {
+					cout << "Vous avez gagne !" << endl;
+					demRun = false;
+				}
+				//si la case est une bombe, on perd et on affiche toutes les bombes
+				else if (DGrid[posY * demCol + posX] == 9) {
+					for (int i = 0; i < demCol * demLig; i++) {
+						if (DGrid[i] == 19 || DGrid[i] == 39) {
+							DGrid[i] = 9;
+						}
+					}
+					cout << "BOOM ! Vous avez perdu !" << endl;
+					demRun = false;
+				}
+				cout << "Coordonnees: " << posX << " - " << posY << " | Bombes Restantes: " << nbrBombes << endl;
 			}
-			else if (choicediff == 1) {
-				//10x10 en facile | bombe = 10 (10%)
-				demCol = 10;
-				demLig = 10;
-				nbrBombes = 10;
-			}
-			else if (choicediff == 2){
-				//15x15 en normal | bombe = 34 (18%)
-				demCol = 15;
-				demLig = 15;
-				nbrBombes = 34;
-			}
-			else if (choicediff == 3) {
-				//20x20 en difficile | bombe = 100 (25%)
-				demCol = 20;
-				demLig = 20;
-				nbrBombes = 100;
-			}
-			int* DGrid = new int[demCol * demLig];
-			bool demRun = true;
-			InitDGrid(DGrid, demCol, demLig, nbrBombes);
-			cout << "Coordonnees: " << posX << " - " << posY << " | Bombes Restantes: " << nbrBombes << endl;
-			while (demRun == true) {
-				//detection barre espace pour devoiler une case => si vide: rien, si bombe: boom, sinon chiffre (de 1 a 8)
-				if (isKeyPressed(VK_SPACE) && 0x8000) {
-					while (isKeyPressed(VK_SPACE) && 0x8000);
-					FloodFill(posX, posY, DGrid, demCol, demLig);
+			//detection touches de déplacement:
+			if (isKeyPressed(VK_LEFT) && 0x8000) {
+				while (isKeyPressed(VK_LEFT) && 0x8000);
+				if (posX == 0) {
+					printGridDem(DGrid, demCol, demLig, posX, posY);
+					cout << "Impossible d'aller plus loin !" << endl;
+				}
+				else {
+					posX--;
 					printGridDem(DGrid, demCol, demLig, posX, posY);
 					cout << "Coordonnees: " << posX << " - " << posY << " | Bombes Restantes: " << nbrBombes << endl;
 				}
-				//detection touches de déplacement:
-				if (isKeyPressed(VK_LEFT) && 0x8000) {
-					while (isKeyPressed(VK_LEFT) && 0x8000);
-					if (posX == 0) {
-						printGridDem(DGrid, demCol, demLig, posX, posY);
-						cout << "Impossible d'aller plus loin !" << endl;
-					} 
-					else {
-						posX--;
-						printGridDem(DGrid, demCol, demLig, posX, posY);
-						cout << "Coordonnees: " << posX << " - " << posY << "Bombes Restantes: " << nbrBombes << endl;
-					}
+			}
+			if (isKeyPressed(VK_RIGHT) && 0x8000) {
+				while (isKeyPressed(VK_RIGHT) && 0x8000);
+				if (posX == demCol - 1) {
+					printGridDem(DGrid, demCol, demLig, posX, posY);
+					cout << "Impossible d'aller plus loin !" << endl;
 				}
-				if (isKeyPressed(VK_RIGHT) && 0x8000) {
-					while (isKeyPressed(VK_RIGHT) && 0x8000);
-					if (posX == demCol-1) {
-						printGridDem(DGrid, demCol, demLig, posX, posY);
-						cout << "Impossible d'aller plus loin !" << endl;
-					}
-					else {
-						posX++;
-						printGridDem(DGrid, demCol, demLig, posX, posY);
-						cout << "Coordonnees: " << posX << " - " << posY << "Bombes Restantes: " << nbrBombes << endl;
-					}
-				}
-				if (isKeyPressed(VK_UP) && 0x8000) {
-					while (isKeyPressed(VK_UP) && 0x8000);
-					if (posY == 0) {
-						printGridDem(DGrid, demCol, demLig, posX, posY);
-						cout << "Impossible d'aller plus loin !" << endl;
-					}
-					else {
-						posY--;
-						printGridDem(DGrid, demCol, demLig, posX, posY);
-						cout << "Coordonnees: " << posX << " - " << posY << "Bombes Restantes: " << nbrBombes << endl;
-					}
-				}
-				if (isKeyPressed(VK_DOWN) && 0x8000) {
-					while (isKeyPressed(VK_DOWN) && 0x8000);
-					if (posY == demLig-1) {
-						printGridDem(DGrid, demCol, demLig, posX, posY);
-						cout << "Impossible d'aller plus loin !" << endl;
-					}
-					else {
-						posY++;
-						printGridDem(DGrid, demCol, demLig, posX, posY);
-						cout << "Coordonnees: " << posX << " - " << posY << "Bombes Restantes: " << nbrBombes << endl;
-					}
+				else {
+					posX++;
+					printGridDem(DGrid, demCol, demLig, posX, posY);
+					cout << "Coordonnees: " << posX << " - " << posY << " | Bombes Restantes: " << nbrBombes << endl;
 				}
 			}
-			//
-			cout << endl;
-			delete DGrid;
-			DGrid = nullptr;
+			if (isKeyPressed(VK_UP) && 0x8000) {
+				while (isKeyPressed(VK_UP) && 0x8000);
+				if (posY == 0) {
+					printGridDem(DGrid, demCol, demLig, posX, posY);
+					cout << "Impossible d'aller plus loin !" << endl;
+				}
+				else {
+					posY--;
+					printGridDem(DGrid, demCol, demLig, posX, posY);
+					cout << "Coordonnees: " << posX << " - " << posY << " | Bombes Restantes: " << nbrBombes << endl;
+				}
+			}
+			if (isKeyPressed(VK_DOWN) && 0x8000) {
+				while (isKeyPressed(VK_DOWN) && 0x8000);
+				if (posY == demLig - 1) {
+					printGridDem(DGrid, demCol, demLig, posX, posY);
+					cout << "Impossible d'aller plus loin !" << endl;
+				}
+				else {
+					posY++;
+					printGridDem(DGrid, demCol, demLig, posX, posY);
+					cout << "Coordonnees: " << posX << " - " << posY << " | Bombes Restantes: " << nbrBombes << endl;
+				}
+			}
+			//détection de la touche F pour placer un drapeau sur une case:
+			if (isKeyPressed('F') && 0x8000) {
+				while (isKeyPressed('F') && 0x8000);
+				int i = posY * demCol + posX;
+				if (DGrid[i] >= 10 && DGrid[i] <= 19) {
+					DGrid[i] += 20;
+					nbrBombes--;
+					printGridDem(DGrid, demCol, demLig, posX, posY);
+				}
+
+				else if (DGrid[i] >= 30) {
+					DGrid[i] -= 20;
+					nbrBombes++;
+					printGridDem(DGrid, demCol, demLig, posX, posY);
+				}
+				printGridDem(DGrid, demCol, demLig, posX, posY);
+				cout << "Coordonnees: " << posX << " - " << posY << " | Bombes Restantes: " << nbrBombes << endl;
+				if (victoire(DGrid, demCol, demLig, totalMines) == true) {
+					cout << "Vous avez gagne !" << endl;
+					demRun = false;
+				}
+			}
 		}
-		else if (choixGame == 7) {
-			return 0;
-		}
+		cout << endl;
+		//libération de la mémoire
+		delete DGrid;
+		DGrid = nullptr;
 	}
-	return 0;
+	else {
+		return 0;
+	}
 }
